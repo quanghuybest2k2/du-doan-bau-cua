@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dự đoán dựa vào tần xuất</title>
+    <link rel="shortcut icon" href="./assets/imgs/logo.png" type="image/png" />
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              clifford: "#dc2626",
+            },
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-out forwards",
+              "scale-in": "scaleIn 0.4s ease-out forwards",
+              "slide-up": "slideUp 0.5s ease-out forwards",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0" },
+                "100%": { opacity: "1" },
+              },
+              scaleIn: {
+                "0%": { transform: "scale(0.95)", opacity: "0" },
+                "100%": { transform: "scale(1)", opacity: "1" },
+              },
+              slideUp: {
+                "0%": { transform: "translateY(20px)", opacity: "0" },
+                "100%": { transform: "translateY(0)", opacity: "1" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="bg-gray-300 min-h-screen flex items-center justify-center p-4 sm:p-6"
+  >
+    <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-4xl w-full">
+      <h1
+        class="text-xl sm:text-2xl font-bold text-center text-clifford mb-4 sm:mb-6"
+      >
+        Bầu Cua Tôm Cá - Dự đoán
+      </h1>
+
+      <!-- Error message -->
+      <div
+        id="error-message"
+        class="hidden mb-4 sm:mb-6 bg-red-100 border-l-4 border-clifford text-clifford p-4 rounded-md flex justify-between items-center animate-fade-in"
+      >
+        <p class="text-sm sm:text-base">
+          Vui lòng chọn đủ linh vật cho tất cả các ván
+        </p>
+        <button id="close-error" class="text-clifford hover:text-red-800">
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Lịch sử nhập -->
+      <div class="mb-4 sm:mb-6">
+        <h2 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-center">
+          Nhập lịch sử 3 ván trước:
+        </h2>
+        <div id="history-inputs" class="space-y-4 sm:space-y-6">
+          <!-- Ván 1 -->
+          <div
+            class="border border-gray-200 rounded-lg p-4 bg-gray-50 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <p class="text-sm font-medium mb-2 text-center">Ván 1</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              <div
+                class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm"
+              >
+                <p class="text-sm font-medium mb-2 text-center">Linh vật 1</p>
+                <div
+                  id="game1-1-group"
+                  class="grid grid-cols-3 gap-2 sm:gap-3 justify-items-center"
+                >
+                  <img
+                    data-value="0"
+                    src="assets/imgs/deer.png"
+                    alt="Nai"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="1"
+                    src="assets/imgs/calabash.png"
+                    alt="Bầu"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="2"
+                    src="assets/imgs/chicken.png"
+                    alt="Gà"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="3"
+                    src="assets/imgs/shrimp.png"
+                    alt="Tôm"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="4"
+                    src="assets/imgs/crab.png"
+                    alt="Cua"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="5"
+                    src="assets/imgs/fish.png"
+                    alt="Cá"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                </div>
+                <input type="hidden" id="game1-1" value="" />
+              </div>
+              <div
+                class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm"
+              >
+                <p class="text-sm font-medium mb-2 text-center">Linh vật 2</p>
+                <div
+                  id="game1-2-group"
+                  class="grid grid-cols-3 gap-2 sm:gap-3 justify-items-center"
+                >
+                  <img
+                    data-value="0"
+                    src="assets/imgs/deer.png"
+                    alt="Nai"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="1"
+                    src="assets/imgs/calabash.png"
+                    alt="Bầu"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="2"
+                    src="assets/imgs/chicken.png"
+                    alt="Gà"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="3"
+                    src="assets/imgs/shrimp.png"
+                    alt="Tôm"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="4"
+                    src="assets/imgs/crab.png"
+                    alt="Cua"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="5"
+                    src="assets/imgs/fish.png"
+                    alt="Cá"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                </div>
+                <input type="hidden" id="game1-2" value="" />
+              </div>
+              <div
+                class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm"
+              >
+                <p class="text-sm font-medium mb-2 text-center">Linh vật 3</p>
+                <div
+                  id="game1-3-group"
+                  class="grid grid-cols-3 gap-2 sm:gap-3 justify-items-center"
+                >
+                  <img
+                    data-value="0"
+                    src="assets/imgs/deer.png"
+                    alt="Nai"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="1"
+                    src="assets/imgs/calabash.png"
+                    alt="Bầu"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="2"
+                    src="assets/imgs/chicken.png"
+                    alt="Gà"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="3"
+                    src="assets/imgs/shrimp.png"
+                    alt="Tôm"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="4"
+                    src="assets/imgs/crab.png"
+                    alt="Cua"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="5"
+                    src="assets/imgs/fish.png"
+                    alt="Cá"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                </div>
+                <input type="hidden" id="game1-3" value="" />
+              </div>
+            </div>
+          </div>
+          <!-- Ván 2 -->
+          <div
+            class="border border-gray-200 rounded-lg p-4 bg-gray-50 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <p class="text-sm font-medium mb-2 text-center">Ván 2</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              <div
+                class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm"
+              >
+                <p class="text-sm font-medium mb-2 text-center">Linh vật 1</p>
+                <div
+                  id="game2-1-group"
+                  class="grid grid-cols-3 gap-2 sm:gap-3 justify-items-center"
+                >
+                  <img
+                    data-value="0"
+                    src="assets/imgs/deer.png"
+                    alt="Nai"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="1"
+                    src="assets/imgs/calabash.png"
+                    alt="Bầu"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="2"
+                    src="assets/imgs/chicken.png"
+                    alt="Gà"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="3"
+                    src="assets/imgs/shrimp.png"
+                    alt="Tôm"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="4"
+                    src="assets/imgs/crab.png"
+                    alt="Cua"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="5"
+                    src="assets/imgs/fish.png"
+                    alt="Cá"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                </div>
+                <input type="hidden" id="game2-1" value="" />
+              </div>
+              <div
+                class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm"
+              >
+                <p class="text-sm font-medium mb-2 text-center">Linh vật 2</p>
+                <div
+                  id="game2-2-group"
+                  class="grid grid-cols-3 gap-2 sm:gap-3 justify-items-center"
+                >
+                  <img
+                    data-value="0"
+                    src="assets/imgs/deer.png"
+                    alt="Nai"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="1"
+                    src="assets/imgs/calabash.png"
+                    alt="Bầu"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="2"
+                    src="assets/imgs/chicken.png"
+                    alt="Gà"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="3"
+                    src="assets/imgs/shrimp.png"
+                    alt="Tôm"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="4"
+                    src="assets/imgs/crab.png"
+                    alt="Cua"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="5"
+                    src="assets/imgs/fish.png"
+                    alt="Cá"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                </div>
+                <input type="hidden" id="game2-2" value="" />
+              </div>
+              <div
+                class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm"
+              >
+                <p class="text-sm font-medium mb-2 text-center">Linh vật 3</p>
+                <div
+                  id="game2-3-group"
+                  class="grid grid-cols-3 gap-2 sm:gap-3 justify-items-center"
+                >
+                  <img
+                    data-value="0"
+                    src="assets/imgs/deer.png"
+                    alt="Nai"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="1"
+                    src="assets/imgs/calabash.png"
+                    alt="Bầu"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="2"
+                    src="assets/imgs/chicken.png"
+                    alt="Gà"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="3"
+                    src="assets/imgs/shrimp.png"
+                    alt="Tôm"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="4"
+                    src="assets/imgs/crab.png"
+                    alt="Cua"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="5"
+                    src="assets/imgs/fish.png"
+                    alt="Cá"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                </div>
+                <input type="hidden" id="game2-3" value="" />
+              </div>
+            </div>
+          </div>
+          <!-- Ván 3 -->
+          <div
+            class="border border-gray-200 rounded-lg p-4 bg-gray-50 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <p class="text-sm font-medium mb-2 text-center">Ván 3</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              <div
+                class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm"
+              >
+                <p class="text-sm font-medium mb-2 text-center">Linh vật 1</p>
+                <div
+                  id="game3-1-group"
+                  class="grid grid-cols-3 gap-2 sm:gap-3 justify-items-center"
+                >
+                  <img
+                    data-value="0"
+                    src="assets/imgs/deer.png"
+                    alt="Nai"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="1"
+                    src="assets/imgs/calabash.png"
+                    alt="Bầu"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="2"
+                    src="assets/imgs/chicken.png"
+                    alt="Gà"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="3"
+                    src="assets/imgs/shrimp.png"
+                    alt="Tôm"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="4"
+                    src="assets/imgs/crab.png"
+                    alt="Cua"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="5"
+                    src="assets/imgs/fish.png"
+                    alt="Cá"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                </div>
+                <input type="hidden" id="game3-1" value="" />
+              </div>
+              <div
+                class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm"
+              >
+                <p class="text-sm font-medium mb-2 text-center">Linh vật 2</p>
+                <div
+                  id="game3-2-group"
+                  class="grid grid-cols-3 gap-2 sm:gap-3 justify-items-center"
+                >
+                  <img
+                    data-value="0"
+                    src="assets/imgs/deer.png"
+                    alt="Nai"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="1"
+                    src="assets/imgs/calabash.png"
+                    alt="Bầu"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="2"
+                    src="assets/imgs/chicken.png"
+                    alt="Gà"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="3"
+                    src="assets/imgs/shrimp.png"
+                    alt="Tôm"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="4"
+                    src="assets/imgs/crab.png"
+                    alt="Cua"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="5"
+                    src="assets/imgs/fish.png"
+                    alt="Cá"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                </div>
+                <input type="hidden" id="game3-2" value="" />
+              </div>
+              <div
+                class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm"
+              >
+                <p class="text-sm font-medium mb-2 text-center">Linh vật 3</p>
+                <div
+                  id="game3-3-group"
+                  class="grid grid-cols-3 gap-2 sm:gap-3 justify-items-center"
+                >
+                  <img
+                    data-value="0"
+                    src="assets/imgs/deer.png"
+                    alt="Nai"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="1"
+                    src="assets/imgs/calabash.png"
+                    alt="Bầu"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="2"
+                    src="assets/imgs/chicken.png"
+                    alt="Gà"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="3"
+                    src="assets/imgs/shrimp.png"
+                    alt="Tôm"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="4"
+                    src="assets/imgs/crab.png"
+                    alt="Cua"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                  <img
+                    data-value="5"
+                    src="assets/imgs/fish.png"
+                    alt="Cá"
+                    class="w-12 h-12 sm:w-16 sm:h-16 cursor-pointer rounded-md hover:opacity-75 transition animal-select object-cover border border-gray-300 hover:border-clifford"
+                  />
+                </div>
+                <input type="hidden" id="game3-3" value="" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-4 mt-4 sm:mt-6">
+          <button
+            id="analyze-btn"
+            class="w-full sm:w-1/2 focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+          >
+            Phân tích
+          </button>
+          <button
+            onclick="history.back()"
+            class="w-full sm:w-1/2 focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            Trở về
+          </button>
+        </div>
+      </div>
+
+      <!-- Kết quả -->
+      <div id="result" class="mt-4 sm:mt-6 text-center hidden animate-slide-up">
+        <h2 class="text-base sm:text-lg font-semibold mb-2">
+          Kết quả phân tích
+        </h2>
+        <p id="probability" class="text-sm sm:text-base mb-2"></p>
+        <p id="frequency" class="text-sm sm:text-base mb-2"></p>
+        <p id="suggestion" class="text-sm sm:text-base font-bold mb-2"></p>
+        <img
+          id="suggestedImage"
+          class="mx-auto mt-3 sm:mt-4 w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-md hidden"
+          src=""
+          alt="Suggested Animal"
+        />
+      </div>
+    </div>
+
+    <script src="./assets/js/xac-xuat.js"></script>
+  </body>
+</html>
